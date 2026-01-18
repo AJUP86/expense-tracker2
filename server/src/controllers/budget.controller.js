@@ -8,3 +8,12 @@ exports.createBudget = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getBudgets = async (req, res, next) => {
+  try {
+    const budgets = await budgetService.getBudgets(req.user.id);
+    res.json(budgets);
+  } catch (err) {
+    next(err);
+  }
+};

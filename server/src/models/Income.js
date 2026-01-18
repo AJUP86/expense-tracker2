@@ -12,7 +12,7 @@ const incomeSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-
+    remaining: { type: Number, required: true },
     source: {
       type: String, // salary, subsidy, bonus
       required: true,

@@ -1,9 +1,8 @@
 const Budget = require('../models/Budget');
 
 exports.createBudget = async (userId, data) => {
-  if (data.amount <= 0) {
-    throw new Error('Budget amount must be positive');
-  }
+  if (!data.name || !data.amount)
+    throw new Error('Name and amount are required');
 
   if (data.type === 'temporary') {
     if (!data.startDate || !data.endDate) {
@@ -19,4 +18,8 @@ exports.createBudget = async (userId, data) => {
     startDate: data.startDate,
     endDate: data.endDate,
   });
+};
+
+exports.getBudgets = async (userId) => {
+  return Budget.find({ userId }).sort({ createdAt: -1 });
 };
