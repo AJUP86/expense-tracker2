@@ -8,7 +8,12 @@ exports.createIncome = async (userId, data) => {
   return Income.create({
     userId,
     amount: data.amount,
+    remaining: data.amount,
     source: data.source,
     date: data.date,
   });
+};
+
+exports.getIncomes = async (userId) => {
+  return Income.find({ userId }).sort({ date: -1 });
 };

@@ -1,36 +1,40 @@
 const Expense = require('../models/Expense');
 const Budget = require('../models/Budget');
+const Income = require('../models/Income');
 
 exports.createExpense = async (userId, data) => {
   let budget = null;
 
   if (data.budgetId) {
-    budget = await Budget.findOne({
-      _id: data.budgetId,
-      userId,
-    });
+    budget = await Budget.findOne({ _id: data.budgetId, userId });
+    if (!budget) throw new Error('Budget not found');
 
-    if (!budget) {
-      throw new Error('Budget not found');
-    }
-
-    // Check temporary budget validity
     const now = new Date();
-    if (budget.type === 'temporary') {
-      if (now < budget.startDate || now > budget.endDate) {
-        throw new Error('Budget is not active');
-      }
+    if (
+      budget.type === 'temporary' &&
+      (now < budget.startDate || now > budget.endDate)
+    ) {
+      throw new Error('Budget is not active');
     }
 
-    if (budget.remaining < data.amount) {
-      throw new Error('Budget exceeded');
-    }
+    if (budget.remaining < data.amount) throw new Error('Budget exceeded');
+  }
 
+  const latestIncome = await Income.findOne({ userId }).sort({ date: -1 });
+  if (!latestIncome) throw new Error('No income found for user');
+  if (latestIncome.remaining < data.amount)
+    throw new Error('Not enough remaining income');
+
+  if (budget) {
     budget.remaining -= data.amount;
     await budget.save();
   }
 
-  return Expense.create({
+  latestIncome.remaining -= data.amount;
+  if (latestIncome.remaining < 0) latestIncome.remaining = 0;
+  await latestIncome.save();
+
+  const expense = await Expense.create({
     userId,
     budgetId: data.budgetId,
     amount: data.amount,
@@ -38,4 +42,6 @@ exports.createExpense = async (userId, data) => {
     description: data.description,
     date: data.date,
   });
+
+  return expense;
 };
