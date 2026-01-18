@@ -29,8 +29,8 @@ const budgetSchema = new mongoose.Schema(
       default: 'monthly',
     },
 
-    startDate: Date,
-    endDate: Date,
+    startDate: { type: Date },
+    endDate: { type: Date },
   },
   { timestamps: true },
 );
