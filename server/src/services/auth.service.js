@@ -38,5 +38,9 @@ exports.login = async (email, password) => {
 
   return {
     token,
+    user: {
+      id: user._id,
+      email: user.email,
+    },
   };
 };
