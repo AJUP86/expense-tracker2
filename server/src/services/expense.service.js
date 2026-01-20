@@ -45,3 +45,7 @@ exports.createExpense = async (userId, data) => {
 
   return expense;
 };
+
+exports.getExpenses = async (userId) => {
+  return Expense.find({ userId }).sort({ date: -1 });
+};

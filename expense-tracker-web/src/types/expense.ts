@@ -3,7 +3,7 @@ export interface Expense {
   userId: string;
   budgetId?: string;
   amount: number;
-  paymentMethod: string;
+  paymentMethod: 'cash' | 'credit';
   description?: string;
   date: string;
   createdAt: string;
