@@ -1,5 +1,10 @@
 import type { Budget } from '../types/budget';
 
+function formatDate(value?: string) {
+  if (!value) return '';
+  return new Date(value).toLocaleDateString();
+}
+
 export default function BudgetList({ budgets }: { budgets: Budget[] }) {
   return (
     <div className="space-y-2">
@@ -12,7 +17,11 @@ export default function BudgetList({ budgets }: { budgets: Budget[] }) {
         >
           <div>
             <p className="font-medium">{budget.name}</p>
-            <p className="text-sm text-gray-500">{budget.type}</p>
+            <p className="text-sm text-gray-500">
+              {budget.type} budget
+              {budget.type === 'temporary' &&
+                ` From ${formatDate(budget.startDate)} to ${formatDate(budget.endDate)}`}
+            </p>
           </div>
           <div className="text-right">
             <p>€{budget.amount}</p>

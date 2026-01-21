@@ -13,6 +13,7 @@ import IncomeList from '../components/IncomeList';
 import AddExpense from '../components/AddExpense';
 import ExpenseList from '../components/ExpenseList';
 import BudgetList from '../components/BudgetList';
+import AddBudget from '../components/AddBudget';
 
 export default function Dashboard() {
   const [incomes, setIncomes] = useState<Income[]>([]);
@@ -44,7 +45,7 @@ export default function Dashboard() {
   if (loading) return <p>Loading...</p>;
 
   const hasIncome = incomes.length > 0;
-  //const hasBudget = budgets.length > 0;
+  const hasBudget = budgets.length > 0;
 
   return (
     <div className="space-y-8">
@@ -55,7 +56,8 @@ export default function Dashboard() {
       {hasIncome && (
         <>
           <IncomeList incomes={incomes} />
-          <BudgetList budgets={budgets} />
+          <AddBudget onCreated={loadDashboard} />
+          {hasBudget && <BudgetList budgets={budgets} />}
           <AddExpense onCreated={loadDashboard} />
           <ExpenseList expenses={expenses} />
         </>

@@ -12,7 +12,7 @@ export async function createBudget(data: {
   startDate?: string;
   endDate?: string;
 }): Promise<Budget> {
-  return apiRequest('/budgets', {
+  const result = apiRequest('/budgets', {
     method: 'POST',
     body: JSON.stringify({
       name: data.name,
@@ -24,4 +24,8 @@ export async function createBudget(data: {
       }),
     }),
   });
+  if (!result) {
+    throw new Error('Budget creation failed');
+  }
+  return result;
 }
