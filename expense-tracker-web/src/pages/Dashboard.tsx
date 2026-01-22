@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 
+import { fetchContributions } from '../services/contribution.service';
 import { fetchIncomes } from '../services/income.service';
 import { fetchExpenses } from '../services/expense.service';
 import { fetchBudgets } from '../services/budget.service';
 
+import type { Contribution } from '../types/contribution';
 import type { Income } from '../types/income';
 import type { Expense } from '../types/expense';
 import type { Budget } from '../types/budget';
@@ -14,8 +16,11 @@ import AddExpense from '../components/AddExpense';
 import ExpenseList from '../components/ExpenseList';
 import BudgetList from '../components/BudgetList';
 import AddBudget from '../components/AddBudget';
+import AddContribution from '../components/AddContribution';
+import ContributionList from '../components/ContributionList';
 
 export default function Dashboard() {
+  const [contributions, setContributions] = useState<Contribution[]>([]);
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
@@ -37,6 +42,13 @@ export default function Dashboard() {
       setIncomes(incomeData);
       setExpenses(expenseData);
       setBudgets(budgetData);
+      if (incomeData.length > 0) {
+        const activeIncome = incomeData[0];
+        const contributionData = await fetchContributions(activeIncome._id);
+        setContributions(contributionData);
+      } else {
+        setContributions([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -56,8 +68,15 @@ export default function Dashboard() {
       {hasIncome && (
         <>
           <IncomeList incomes={incomes} />
+          <AddContribution
+            incomeId={incomes[0]._id}
+            onCreated={loadDashboard}
+          />
+          <ContributionList contributions={contributions} />
+
           <AddBudget onCreated={loadDashboard} />
           {hasBudget && <BudgetList budgets={budgets} />}
+
           <AddExpense budgets={budgets} onCreated={loadDashboard} />
           <ExpenseList expenses={expenses} />
         </>
