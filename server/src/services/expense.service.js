@@ -51,6 +51,18 @@ exports.createExpense = async (userId, data) => {
   return expense;
 };
 
-exports.getExpenses = async (userId) => {
-  return Expense.find({ userId }).sort({ date: -1 });
+exports.getExpenses = async (userId, filters = {}) => {
+  const query = { userId };
+
+  if (filters.budgetId) {
+    query.budgetId = filters.budgetId;
+  }
+
+  if (filters.startDate || filters.endDate) {
+    query.date = {};
+    if (filters.startDate) query.date.$gte = filters.startDate;
+    if (filters.endDate) query.date.$lte = filters.endDate;
+  }
+
+  return Expense.find(query).sort({ date: -1 }).populate('budgetId', 'name');
 };

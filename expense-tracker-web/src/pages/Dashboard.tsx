@@ -58,7 +58,7 @@ export default function Dashboard() {
           <IncomeList incomes={incomes} />
           <AddBudget onCreated={loadDashboard} />
           {hasBudget && <BudgetList budgets={budgets} />}
-          <AddExpense onCreated={loadDashboard} />
+          <AddExpense budgets={budgets} onCreated={loadDashboard} />
           <ExpenseList expenses={expenses} />
         </>
       )}
