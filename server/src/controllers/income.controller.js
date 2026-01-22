@@ -17,3 +17,12 @@ exports.getIncomes = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.closeIncome = async (req, res, next) => {
+  try {
+    const income = await incomeService.closeIncome(req.user.id, req.params.id);
+    res.json(income);
+  } catch (err) {
+    next(err);
+  }
+};

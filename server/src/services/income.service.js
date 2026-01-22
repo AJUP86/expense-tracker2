@@ -17,3 +17,15 @@ exports.createIncome = async (userId, data) => {
 exports.getIncomes = async (userId) => {
   return Income.find({ userId }).sort({ date: -1 });
 };
+
+exports.closeIncome = async (userId, incomeId) => {
+  const income = await Income.findOne({ _id: incomeId, userId });
+
+  if (!income) throw new Error('Income not found');
+  if (income.isClosed) throw new Error('Income already closed');
+
+  income.isClosed = true;
+  await income.save();
+
+  return income;
+};

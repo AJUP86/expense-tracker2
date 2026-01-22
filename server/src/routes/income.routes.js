@@ -6,5 +6,6 @@ router.use(auth);
 
 router.post('/', controller.createIncome);
 router.get('/', controller.getIncomes);
+router.post('/:id/close', controller.closeIncome);
 
 module.exports = router;

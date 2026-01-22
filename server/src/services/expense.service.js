@@ -29,7 +29,9 @@ exports.createExpense = async (userId, data) => {
     await budget.save();
   }
 
-  const income = await Income.findOne({ userId }).sort({ createdAt: -1 });
+  const income = await Income.findOne({ userId, isClosed: true }).sort({
+    createdAt: -1,
+  });
 
   if (!income) throw new Error('No income found for user');
   if (!income || income.remaining < amount) {
