@@ -3,11 +3,19 @@ const Budget = require('../models/Budget');
 const Income = require('../models/Income');
 
 exports.createExpense = async (userId, data) => {
-  let budget = null;
+  const { description, amount, budgetId } = data;
 
-  if (data.budgetId) {
-    budget = await Budget.findOne({ _id: data.budgetId, userId });
+  if (!description || !amount) {
+    throw new Error('Description and amount are required');
+  }
+
+  if (budgetId) {
+    const budget = await Budget.findOne({ _id: budgetId, userId });
     if (!budget) throw new Error('Budget not found');
+
+    if (budget.remaining < amount) {
+      throw new Error('Budget has insufficient remaining amount');
+    }
 
     const now = new Date();
     if (
@@ -17,29 +25,26 @@ exports.createExpense = async (userId, data) => {
       throw new Error('Budget is not active');
     }
 
-    if (budget.remaining < data.amount) throw new Error('Budget exceeded');
-  }
-
-  const latestIncome = await Income.findOne({ userId }).sort({ date: -1 });
-  if (!latestIncome) throw new Error('No income found for user');
-  if (latestIncome.remaining < data.amount)
-    throw new Error('Not enough remaining income');
-
-  if (budget) {
-    budget.remaining -= data.amount;
+    budget.remaining -= amount;
     await budget.save();
   }
 
-  latestIncome.remaining -= data.amount;
-  if (latestIncome.remaining < 0) latestIncome.remaining = 0;
-  await latestIncome.save();
+  const income = await Income.findOne({ userId }).sort({ createdAt: -1 });
+
+  if (!income) throw new Error('No income found for user');
+  if (!income || income.remaining < amount) {
+    throw new Error('Insufficient income remaining');
+  }
+
+  income.remaining -= amount;
+  await income.save();
 
   const expense = await Expense.create({
     userId,
-    budgetId: data.budgetId,
-    amount: data.amount,
+    description,
+    amount,
+    budgetId,
     paymentMethod: data.paymentMethod,
-    description: data.description,
     date: data.date,
   });
 
