@@ -17,6 +17,10 @@ const incomeSchema = new mongoose.Schema(
       type: String, // salary, subsidy, bonus
       required: true,
     },
+    isClosed: {
+      type: Boolean,
+      default: false,
+    },
 
     date: {
       type: Date,

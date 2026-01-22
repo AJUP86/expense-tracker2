@@ -12,7 +12,8 @@ export default function ExpenseList({ expenses }: { expenses: Expense[] }) {
             <span>€{expense.amount}</span>
           </div>
           <div className="text-xs text-gray-500">
-            {expense.budgetId?.name ?? 'Unassigned'} · {expense.paymentMethod} ·{' '}
+            {expense.budgetId?.name ?? 'Unexpected expense'} ·{' '}
+            {expense.paymentMethod} ·{' '}
             {new Date(expense.date).toLocaleDateString()}
           </div>
         </div>
