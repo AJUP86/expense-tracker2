@@ -5,14 +5,15 @@ export default function ExpenseList({ expenses }: { expenses: Expense[] }) {
     <div className="space-y-2">
       <h2 className="font-medium">Expenses</h2>
 
-      {expenses.map((e) => (
-        <div key={e._id} className="border rounded p-3 bg-white">
+      {expenses.map((expense) => (
+        <div key={expense._id} className="border rounded p-3 bg-white">
           <div className="flex justify-between">
-            <span>{e.description || 'Expense'}</span>
-            <span>€{e.amount}</span>
+            <span>{expense.description || 'Expense'}</span>
+            <span>€{expense.amount}</span>
           </div>
           <div className="text-xs text-gray-500">
-            {e.paymentMethod} · {new Date(e.date).toLocaleDateString()}
+            {expense.budgetId?.name ?? 'Unassigned'} · {expense.paymentMethod} ·{' '}
+            {new Date(expense.date).toLocaleDateString()}
           </div>
         </div>
       ))}

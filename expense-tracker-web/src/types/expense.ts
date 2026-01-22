@@ -1,7 +1,10 @@
 export interface Expense {
   _id: string;
   userId: string;
-  budgetId?: string;
+  budgetId?: {
+    _id: string;
+    name: string;
+  };
   amount: number;
   paymentMethod: 'cash' | 'credit';
   description?: string;

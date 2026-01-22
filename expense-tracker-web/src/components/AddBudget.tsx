@@ -10,33 +10,33 @@ export default function AddBudget({ onCreated }: { onCreated: () => void }) {
   const [endDate, setEndDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
-
   const [error, setError] = useState<string | null>(null);
 
   const isTemporary = type === 'temporary';
+  const parsedAmount = Number(amount);
+
+  const validationError = (() => {
+    if (name.trim().length === 0) return 'Name is required';
+
+    if (Number.isNaN(parsedAmount) || parsedAmount <= 0)
+      return 'Amount must be a positive number';
+
+    if (isTemporary) {
+      if (!startDate || !endDate) return 'Start and end dates are required';
+
+      if (new Date(startDate) > new Date(endDate))
+        return 'End date must be after start date';
+    }
+
+    return null;
+  })();
+  const isValid = validationError === null;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!isValid || loading) return;
+
     setError(null);
-
-    const parsedAmount = Number(amount);
-
-    if (Number.isNaN(parsedAmount) || parsedAmount <= 0) {
-      setError('Amount must be a positive number');
-      return;
-    }
-
-    if (isTemporary) {
-      if (!startDate || !endDate) {
-        setError('Start date and end date are required for temporary budgets');
-        return;
-      }
-
-      if (new Date(startDate) > new Date(endDate)) {
-        setError('End date must be after start date');
-        return;
-      }
-    }
     setLoading(true);
 
     try {
@@ -44,10 +44,7 @@ export default function AddBudget({ onCreated }: { onCreated: () => void }) {
         name,
         type,
         amount: parsedAmount,
-        ...(isTemporary && {
-          startDate,
-          endDate,
-        }),
+        ...(isTemporary && { startDate, endDate }),
       });
 
       setName('');
@@ -55,11 +52,10 @@ export default function AddBudget({ onCreated }: { onCreated: () => void }) {
       setType('fixed');
       setStartDate('');
       setEndDate('');
+      setSuccess('Budget succesfully created.');
       onCreated();
-      setSuccess('Budget created successfully!');
-      setTimeout(() => setSuccess(null), 3000);
     } catch {
-      setError('Failed to create budget. Please try again.');
+      setError('Failed to create budget');
     } finally {
       setLoading(false);
     }
@@ -73,8 +69,12 @@ export default function AddBudget({ onCreated }: { onCreated: () => void }) {
       <h2 className="font-medium">Add budget</h2>
       {success && <p className="text-sm text-green-600">{success}</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}
+      {validationError && (
+        <p className="text-sm text-red-600">{validationError}</p>
+      )}
+
       <input
-        placeholder="Budget (e.g. Groceries)"
+        placeholder="Budget name (e.g. Groceries)"
         value={name}
         onChange={(e) => setName(e.target.value)}
         className="w-full border rounded px-3 py-2"
@@ -120,8 +120,8 @@ export default function AddBudget({ onCreated }: { onCreated: () => void }) {
 
       <button
         type="submit"
+        disabled={!isValid || loading}
         className="w-full bg-black text-white py-2 rounded disabled:opacity-50"
-        disabled={loading}
       >
         {loading ? 'Adding...' : 'Add Budget'}
       </button>
