@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { createContribution } from '../services/contribution.service';
+import { createIncome } from '../services/income.service';
 
-export default function AddContribution({
-  incomeId,
+export default function AddIncome({
+  periodId,
   onCreated,
 }: {
-  incomeId: string;
+  periodId: string;
   onCreated: () => void;
 }) {
   const [name, setName] = useState('');
@@ -16,7 +16,7 @@ export default function AddContribution({
     e.preventDefault();
     setLoading(true);
 
-    await createContribution(incomeId, {
+    await createIncome(periodId, {
       name,
       amount: Number(amount),
     });
@@ -30,7 +30,7 @@ export default function AddContribution({
   return (
     <form className="border p-3 rounded space-y-2" onSubmit={handleSubmit}>
       <input
-        placeholder="Contribution (e.g. Salary)"
+        placeholder="Income (e.g. Salary)"
         value={name}
         onChange={(e) => setName(e.target.value)}
         className="w-full border px-2 py-1"
@@ -47,7 +47,7 @@ export default function AddContribution({
       />
 
       <button disabled={loading} className="w-full bg-black text-white py-1">
-        {loading ? 'Adding…' : 'Add Contribution'}
+        {loading ? 'Adding…' : 'Add Income'}
       </button>
     </form>
   );

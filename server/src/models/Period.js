@@ -10,9 +10,14 @@ const periodSchema = new mongoose.Schema(
 
     amount: {
       type: Number,
-      required: false,
+      default: 0,
     },
-    remaining: { type: Number, required: false },
+
+    remaining: {
+      type: Number,
+      default: 0,
+    },
+
     name: {
       type: String,
       required: true,

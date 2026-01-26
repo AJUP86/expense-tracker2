@@ -1,6 +1,6 @@
-export interface Contribution {
+export interface Income {
   _id: string;
-  incomeId: string;
+  periodId: string;
   name: string;
   amount: number;
   createdAt: string;

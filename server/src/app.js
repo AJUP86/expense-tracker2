@@ -14,7 +14,7 @@ app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/budgets', require('./routes/budget.routes'));
 app.use('/api/expenses', require('./routes/expense.routes'));
 app.use('/api/periods', require('./routes/period.routes'));
-app.use('/api/contributions', require('./routes/contribution.routes'));
+app.use('/api/incomes', require('./routes/income.routes'));
 
 // Error handler (always last)
 app.use(require('./middlewares/error.middleware'));

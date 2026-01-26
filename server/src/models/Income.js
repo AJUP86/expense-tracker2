@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const contributionSchema = new mongoose.Schema(
+const incomeSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -8,9 +8,9 @@ const contributionSchema = new mongoose.Schema(
       required: true,
     },
 
-    incomeId: {
+    periodId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Income',
+      ref: 'Period',
       required: true,
     },
 
@@ -28,6 +28,6 @@ const contributionSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-contributionSchema.index({ userId: 1, incomeId: 1 });
+incomeSchema.index({ userId: 1, periodId: 1 });
 
-module.exports = mongoose.model('Contribution', contributionSchema);
+module.exports = mongoose.model('Income', incomeSchema);

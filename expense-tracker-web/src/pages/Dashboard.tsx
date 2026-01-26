@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 
-import { fetchContributions } from '../services/contribution.service';
+import { fetchIncomes } from '../services/income.service';
 import { fetchPeriods } from '../services/period.service';
 import { fetchExpenses } from '../services/expense.service';
 import { fetchBudgets } from '../services/budget.service';
 
-import type { Contribution } from '../types/contribution';
+import type { Income } from '../types/income';
 import type { Period } from '../types/period';
 import type { Expense } from '../types/expense';
 import type { Budget } from '../types/budget';
@@ -16,11 +16,11 @@ import AddExpense from '../components/AddExpense';
 import ExpenseList from '../components/ExpenseList';
 import BudgetList from '../components/BudgetList';
 import AddBudget from '../components/AddBudget';
-import AddContribution from '../components/AddContribution';
-import ContributionList from '../components/ContributionList';
+import AddIncome from '../components/AddIncome';
+import IncomeList from '../components/IncomeList';
 
 export default function Dashboard() {
-  const [contributions, setContributions] = useState<Contribution[]>([]);
+  const [incomes, setIncomes] = useState<Income[]>([]);
   const [periods, setPeriods] = useState<Period[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
@@ -43,11 +43,11 @@ export default function Dashboard() {
       setExpenses(expenseData);
       setBudgets(budgetData);
       if (periodData.length > 0) {
-        const activeIncome = periodData[0];
-        const contributionData = await fetchContributions(activeIncome._id);
-        setContributions(contributionData);
+        const activePeriod = periodData[0];
+        const incomeData = await fetchIncomes(activePeriod._id);
+        setIncomes(incomeData);
       } else {
-        setContributions([]);
+        setIncomes([]);
       }
     } finally {
       setLoading(false);
@@ -68,11 +68,8 @@ export default function Dashboard() {
       {hasPeriod && (
         <>
           <PeriodList periods={periods} />
-          <AddContribution
-            incomeId={periods[0]._id}
-            onCreated={loadDashboard}
-          />
-          <ContributionList contributions={contributions} />
+          <AddIncome periodId={periods[0]._id} onCreated={loadDashboard} />
+          <IncomeList incomes={incomes} />
 
           <AddBudget onCreated={loadDashboard} />
           {hasBudget && <BudgetList budgets={budgets} />}

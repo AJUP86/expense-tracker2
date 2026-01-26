@@ -1,0 +1,26 @@
+const incomeService = require('../services/income.service');
+
+exports.createIncome = async (req, res, next) => {
+  try {
+    const income = await incomeService.createIncome(
+      req.user.id,
+      req.params.periodId,
+      req.body,
+    );
+    res.status(201).json(income);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getIncomes = async (req, res, next) => {
+  try {
+    const incomes = await incomeService.getIncomes(
+      req.user.id,
+      req.params.periodId,
+    );
+    res.json(incomes);
+  } catch (err) {
+    next(err);
+  }
+};
