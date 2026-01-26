@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react';
 
 import { fetchContributions } from '../services/contribution.service';
-import { fetchIncomes } from '../services/income.service';
+import { fetchPeriods } from '../services/period.service';
 import { fetchExpenses } from '../services/expense.service';
 import { fetchBudgets } from '../services/budget.service';
 
 import type { Contribution } from '../types/contribution';
-import type { Income } from '../types/income';
+import type { Period } from '../types/period';
 import type { Expense } from '../types/expense';
 import type { Budget } from '../types/budget';
 
-import AddIncome from '../components/AddIncome';
-import IncomeList from '../components/IncomeList';
+import AddPeriod from '../components/AddPeriod';
+import PeriodList from '../components/PeriodList';
 import AddExpense from '../components/AddExpense';
 import ExpenseList from '../components/ExpenseList';
 import BudgetList from '../components/BudgetList';
@@ -21,7 +21,7 @@ import ContributionList from '../components/ContributionList';
 
 export default function Dashboard() {
   const [contributions, setContributions] = useState<Contribution[]>([]);
-  const [incomes, setIncomes] = useState<Income[]>([]);
+  const [periods, setPeriods] = useState<Period[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
 
@@ -34,16 +34,16 @@ export default function Dashboard() {
   async function loadDashboard() {
     setLoading(true);
     try {
-      const [incomeData, expenseData, budgetData] = await Promise.all([
-        fetchIncomes(),
+      const [periodData, expenseData, budgetData] = await Promise.all([
+        fetchPeriods(),
         fetchExpenses(),
         fetchBudgets(),
       ]);
-      setIncomes(incomeData);
+      setPeriods(periodData);
       setExpenses(expenseData);
       setBudgets(budgetData);
-      if (incomeData.length > 0) {
-        const activeIncome = incomeData[0];
+      if (periodData.length > 0) {
+        const activeIncome = periodData[0];
         const contributionData = await fetchContributions(activeIncome._id);
         setContributions(contributionData);
       } else {
@@ -56,20 +56,20 @@ export default function Dashboard() {
 
   if (loading) return <p>Loading...</p>;
 
-  const hasIncome = incomes.length > 0;
+  const hasPeriod = periods.length > 0;
   const hasBudget = budgets.length > 0;
 
   return (
     <div className="space-y-8">
       <h1 className="text-xl font-semibold">Dashboard</h1>
 
-      {!hasIncome && <AddIncome onCreated={loadDashboard} />}
+      {!hasPeriod && <AddPeriod onCreated={loadDashboard} />}
 
-      {hasIncome && (
+      {hasPeriod && (
         <>
-          <IncomeList incomes={incomes} />
+          <PeriodList periods={periods} />
           <AddContribution
-            incomeId={incomes[0]._id}
+            incomeId={periods[0]._id}
             onCreated={loadDashboard}
           />
           <ContributionList contributions={contributions} />

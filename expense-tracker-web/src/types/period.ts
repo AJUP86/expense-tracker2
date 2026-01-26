@@ -1,9 +1,9 @@
-export interface Income {
+export interface Period {
   _id: string;
   userId: string;
   amount: number;
   remaining: number;
-  source: string;
+  name: string;
   date: string;
   createdAt: string;
   updatedAt: string;

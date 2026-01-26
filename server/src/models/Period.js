@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const incomeSchema = new mongoose.Schema(
+const periodSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -10,11 +10,11 @@ const incomeSchema = new mongoose.Schema(
 
     amount: {
       type: Number,
-      required: true,
+      required: false,
     },
-    remaining: { type: Number, required: true },
-    source: {
-      type: String, // salary, subsidy, bonus
+    remaining: { type: Number, required: false },
+    name: {
+      type: String,
       required: true,
     },
     isClosed: {
@@ -30,6 +30,6 @@ const incomeSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-incomeSchema.index({ userId: 1, date: -1 });
+periodSchema.index({ userId: 1, date: -1 });
 
-module.exports = mongoose.model('Income', incomeSchema);
+module.exports = mongoose.model('Period', periodSchema);
