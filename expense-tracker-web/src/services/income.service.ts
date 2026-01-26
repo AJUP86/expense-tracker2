@@ -1,16 +1,15 @@
 import { apiRequest } from '../lib/api';
 import type { Income } from '../types/income';
 
-export async function fetchIncomes(): Promise<Income[]> {
-  return apiRequest('/incomes');
+export function fetchIncomes(periodId: string): Promise<Income[]> {
+  return apiRequest(`/incomes/${periodId}`);
 }
 
-export async function createIncome(data: {
-  amount: number;
-  source: string;
-  date?: string;
-}): Promise<Income> {
-  return apiRequest('/incomes', {
+export function createIncome(
+  periodId: string,
+  data: { name: string; amount: number },
+): Promise<Income> {
+  return apiRequest(`/incomes/${periodId}`, {
     method: 'POST',
     body: JSON.stringify(data),
   });

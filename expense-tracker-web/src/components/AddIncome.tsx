@@ -1,49 +1,53 @@
 import { useState } from 'react';
 import { createIncome } from '../services/income.service';
 
-export default function AddIncome({ onCreated }: { onCreated: () => void }) {
+export default function AddIncome({
+  periodId,
+  onCreated,
+}: {
+  periodId: string;
+  onCreated: () => void;
+}) {
+  const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
-  const [source, setSource] = useState('');
+  const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setLoading(true);
 
-    await createIncome({
+    await createIncome(periodId, {
+      name,
       amount: Number(amount),
-      source,
     });
 
+    setName('');
     setAmount('');
-    setSource('');
+    setLoading(false);
     onCreated();
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="max-w-sm border rounded p-4 bg-white space-y-3"
-    >
-      <h2 className="font-medium">Add your first income</h2>
+    <form className="border p-3 rounded space-y-2" onSubmit={handleSubmit}>
+      <input
+        placeholder="Income (e.g. Salary)"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        className="w-full border px-2 py-1"
+        required
+      />
 
       <input
         type="number"
         placeholder="Amount"
         value={amount}
         onChange={(e) => setAmount(e.target.value)}
-        className="w-full border rounded px-3 py-2"
+        className="w-full border px-2 py-1"
         required
       />
 
-      <input
-        placeholder="Source (e.g. Salary)"
-        value={source}
-        onChange={(e) => setSource(e.target.value)}
-        className="w-full border rounded px-3 py-2"
-        required
-      />
-
-      <button className="w-full bg-black text-white py-2 rounded">
-        Add income
+      <button disabled={loading} className="w-full bg-black text-white py-1">
+        {loading ? 'Adding…' : 'Add Income'}
       </button>
     </form>
   );

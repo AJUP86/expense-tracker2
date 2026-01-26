@@ -8,28 +8,26 @@ const incomeSchema = new mongoose.Schema(
       required: true,
     },
 
+    periodId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Period',
+      required: true,
+    },
+
+    name: {
+      type: String,
+      required: true,
+    },
+
     amount: {
       type: Number,
       required: true,
-    },
-    remaining: { type: Number, required: true },
-    source: {
-      type: String, // salary, subsidy, bonus
-      required: true,
-    },
-    isClosed: {
-      type: Boolean,
-      default: false,
-    },
-
-    date: {
-      type: Date,
-      default: Date.now,
+      min: 0,
     },
   },
   { timestamps: true },
 );
 
-incomeSchema.index({ userId: 1, date: -1 });
+incomeSchema.index({ userId: 1, periodId: 1 });
 
 module.exports = mongoose.model('Income', incomeSchema);

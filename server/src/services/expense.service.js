@@ -1,6 +1,6 @@
 const Expense = require('../models/Expense');
 const Budget = require('../models/Budget');
-const Income = require('../models/Income');
+const Period = require('../models/Period');
 
 exports.createExpense = async (userId, data) => {
   const { description, amount, budgetId } = data;
@@ -29,15 +29,20 @@ exports.createExpense = async (userId, data) => {
     await budget.save();
   }
 
-  const income = await Income.findOne({ userId }).sort({ createdAt: -1 });
+  const period = await Period.findOne({ userId, isClosed: true }).sort({
+    createdAt: -1,
+  });
 
-  if (!income) throw new Error('No income found for user');
-  if (!income || income.remaining < amount) {
-    throw new Error('Insufficient income remaining');
+  if (!period) throw new Error('No period found for user');
+  if (!period || period.remaining < amount) {
+    throw new Error('Insufficient funds remaining');
+  }
+  if (!period.isClosed) {
+    throw new Error('Cannot add expenses to an open period');
   }
 
-  income.remaining -= amount;
-  await income.save();
+  period.remaining -= amount;
+  await period.save();
 
   const expense = await Expense.create({
     userId,
