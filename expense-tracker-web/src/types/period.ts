@@ -7,4 +7,5 @@ export interface Period {
   date: string;
   createdAt: string;
   updatedAt: string;
+  isClosed: boolean;
 }

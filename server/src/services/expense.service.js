@@ -37,6 +37,9 @@ exports.createExpense = async (userId, data) => {
   if (!period || period.remaining < amount) {
     throw new Error('Insufficient funds remaining');
   }
+  if (!period.isClosed) {
+    throw new Error('Cannot add expenses to an open period');
+  }
 
   period.remaining -= amount;
   await period.save();

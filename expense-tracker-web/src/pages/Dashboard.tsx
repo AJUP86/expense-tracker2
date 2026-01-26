@@ -18,13 +18,13 @@ import BudgetList from '../components/BudgetList';
 import AddBudget from '../components/AddBudget';
 import AddIncome from '../components/AddIncome';
 import IncomeList from '../components/IncomeList';
+import ClosePeriodButton from '../components/ClosePeriodButton';
 
 export default function Dashboard() {
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [periods, setPeriods] = useState<Period[]>([]);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
-
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,15 +39,19 @@ export default function Dashboard() {
         fetchExpenses(),
         fetchBudgets(),
       ]);
+
       setPeriods(periodData);
       setExpenses(expenseData);
       setBudgets(budgetData);
+
       if (periodData.length > 0) {
-        const activePeriod = periodData[0];
-        const incomeData = await fetchIncomes(activePeriod._id);
-        setIncomes(incomeData);
-      } else {
-        setIncomes([]);
+        const activePeriod = periodData.find((p) => !p.isClosed);
+        if (activePeriod) {
+          const incomeData = await fetchIncomes(activePeriod._id);
+          setIncomes(incomeData);
+        } else {
+          setIncomes([]);
+        }
       }
     } finally {
       setLoading(false);
@@ -58,24 +62,51 @@ export default function Dashboard() {
 
   const hasPeriod = periods.length > 0;
   const hasBudget = budgets.length > 0;
+  const openPeriod = periods.find((p) => !p.isClosed);
+  const closedPeriod = periods.find((p) => p.isClosed);
 
   return (
     <div className="space-y-8">
-      <h1 className="text-xl font-semibold">Dashboard</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">Dashboard</h1>
+
+        {openPeriod && (
+          <ClosePeriodButton
+            periodId={openPeriod._id}
+            onClosed={loadDashboard}
+          />
+        )}
+      </div>
 
       {!hasPeriod && <AddPeriod onCreated={loadDashboard} />}
 
       {hasPeriod && (
         <>
           <PeriodList periods={periods} />
-          <AddIncome periodId={periods[0]._id} onCreated={loadDashboard} />
-          <IncomeList incomes={incomes} />
 
-          <AddBudget onCreated={loadDashboard} />
+          {/* Budgets are always visible once a period exists */}
           {hasBudget && <BudgetList budgets={budgets} />}
 
-          <AddExpense budgets={budgets} onCreated={loadDashboard} />
-          <ExpenseList expenses={expenses} />
+          {openPeriod && (
+            <>
+              <AddIncome periodId={openPeriod._id} onCreated={loadDashboard} />
+              <IncomeList incomes={incomes} />
+
+              <AddBudget onCreated={loadDashboard} />
+
+              <ClosePeriodButton
+                periodId={openPeriod._id}
+                onClosed={loadDashboard}
+              />
+            </>
+          )}
+
+          {closedPeriod && (
+            <>
+              <AddExpense budgets={budgets} onCreated={loadDashboard} />
+              <ExpenseList expenses={expenses} />
+            </>
+          )}
         </>
       )}
     </div>

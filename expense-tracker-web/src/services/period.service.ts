@@ -15,3 +15,9 @@ export async function createPeriod(data: {
     body: JSON.stringify(data),
   });
 }
+
+export function closePeriod(periodId: string): Promise<Period> {
+  return apiRequest(`/periods/${periodId}/close`, {
+    method: 'POST',
+  });
+}
