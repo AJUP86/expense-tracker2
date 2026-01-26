@@ -1,4 +1,4 @@
-export type BudgetType = 'temporary' | 'monthly' | 'fixed';
+export type BudgetType = 'temporary' | 'fixed';
 
 export interface Budget {
   _id: string;

@@ -1,13 +1,21 @@
 const Expense = require('../models/Expense');
 const Budget = require('../models/Budget');
-const Income = require('../models/Income');
+const Period = require('../models/Period');
 
 exports.createExpense = async (userId, data) => {
-  let budget = null;
+  const { description, amount, budgetId } = data;
 
-  if (data.budgetId) {
-    budget = await Budget.findOne({ _id: data.budgetId, userId });
+  if (!description || !amount) {
+    throw new Error('Description and amount are required');
+  }
+
+  if (budgetId) {
+    const budget = await Budget.findOne({ _id: budgetId, userId });
     if (!budget) throw new Error('Budget not found');
+
+    if (budget.remaining < amount) {
+      throw new Error('Budget has insufficient remaining amount');
+    }
 
     const now = new Date();
     if (
@@ -17,31 +25,49 @@ exports.createExpense = async (userId, data) => {
       throw new Error('Budget is not active');
     }
 
-    if (budget.remaining < data.amount) throw new Error('Budget exceeded');
-  }
-
-  const latestIncome = await Income.findOne({ userId }).sort({ date: -1 });
-  if (!latestIncome) throw new Error('No income found for user');
-  if (latestIncome.remaining < data.amount)
-    throw new Error('Not enough remaining income');
-
-  if (budget) {
-    budget.remaining -= data.amount;
+    budget.remaining -= amount;
     await budget.save();
   }
 
-  latestIncome.remaining -= data.amount;
-  if (latestIncome.remaining < 0) latestIncome.remaining = 0;
-  await latestIncome.save();
+  const period = await Period.findOne({ userId, isClosed: true }).sort({
+    createdAt: -1,
+  });
+
+  if (!period) throw new Error('No period found for user');
+  if (!period || period.remaining < amount) {
+    throw new Error('Insufficient funds remaining');
+  }
+  if (!period.isClosed) {
+    throw new Error('Cannot add expenses to an open period');
+  }
+
+  period.remaining -= amount;
+  await period.save();
 
   const expense = await Expense.create({
     userId,
-    budgetId: data.budgetId,
-    amount: data.amount,
+    description,
+    amount,
+    budgetId,
     paymentMethod: data.paymentMethod,
-    description: data.description,
     date: data.date,
   });
 
   return expense;
+};
+
+exports.getExpenses = async (userId, filters = {}) => {
+  const query = { userId };
+
+  if (filters.budgetId) {
+    query.budgetId = filters.budgetId;
+  }
+
+  if (filters.startDate || filters.endDate) {
+    query.date = {};
+    if (filters.startDate) query.date.$gte = filters.startDate;
+    if (filters.endDate) query.date.$lte = filters.endDate;
+  }
+
+  return Expense.find(query).sort({ date: -1 }).populate('budgetId', 'name');
 };

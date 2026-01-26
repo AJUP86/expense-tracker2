@@ -1,19 +1,31 @@
 const Income = require('../models/Income');
+const Period = require('../models/Period');
 
-exports.createIncome = async (userId, data) => {
-  if (data.amount <= 0) {
-    throw new Error('Income must be positive');
+exports.createIncome = async (userId, periodId, data) => {
+  const period = await Period.findOne({ _id: periodId, userId });
+
+  if (!period) throw new Error('Period not found');
+  if (period.isClosed) throw new Error('Period is closed');
+
+  if (!data.name || !data.amount || data.amount <= 0) {
+    throw new Error('Invalid income');
   }
 
-  return Income.create({
+  const income = await Income.create({
     userId,
+    periodId,
+    name: data.name,
     amount: data.amount,
-    remaining: data.amount,
-    source: data.source,
-    date: data.date,
   });
+
+  // Update period totals
+  period.amount = (period.amount || 0) + data.amount;
+  period.remaining = (period.remaining || 0) + data.amount;
+  await period.save();
+
+  return income;
 };
 
-exports.getIncomes = async (userId) => {
-  return Income.find({ userId }).sort({ date: -1 });
+exports.getIncomes = async (userId, periodId) => {
+  return Income.find({ userId, periodId }).sort({ createdAt: -1 });
 };
