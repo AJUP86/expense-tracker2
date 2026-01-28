@@ -85,7 +85,7 @@ export default function Dashboard() {
           <PeriodList periods={periods} />
 
           {/* Budgets are always visible once a period exists */}
-          {hasBudget && <BudgetList budgets={budgets} />}
+          {hasBudget && <BudgetList budgets={budgets} expenses={expenses} />}
 
           {openPeriod && (
             <>
@@ -104,7 +104,7 @@ export default function Dashboard() {
           {closedPeriod && (
             <>
               <AddExpense budgets={budgets} onCreated={loadDashboard} />
-              <ExpenseList expenses={expenses} />
+              <BudgetList budgets={budgets} expenses={expenses} />
             </>
           )}
         </>
