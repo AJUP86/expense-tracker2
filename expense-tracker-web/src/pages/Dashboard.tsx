@@ -84,28 +84,43 @@ export default function Dashboard() {
         <>
           <PeriodList periods={periods} />
 
-          {/* Budgets are always visible once a period exists */}
-          {hasBudget && <BudgetList budgets={budgets} />}
-
           {openPeriod && (
             <>
-              <AddIncome periodId={openPeriod._id} onCreated={loadDashboard} />
-              <IncomeList incomes={incomes} />
+              {hasBudget && (
+                <BudgetList budgets={budgets} expenses={expenses} layout="" />
+              )}
 
-              <AddBudget onCreated={loadDashboard} />
-
-              <ClosePeriodButton
-                periodId={openPeriod._id}
-                onClosed={loadDashboard}
-              />
+              <div className="space-y-4 pt-4 border-t">
+                <AddIncome
+                  periodId={openPeriod._id}
+                  onCreated={loadDashboard}
+                />
+                <IncomeList incomes={incomes} />
+                <AddBudget onCreated={loadDashboard} />
+              </div>
             </>
           )}
-
           {closedPeriod && (
-            <>
-              <AddExpense budgets={budgets} onCreated={loadDashboard} />
-              <ExpenseList expenses={expenses} />
-            </>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+              {/* Left Column: Input (1/4 width) */}
+              <div className="lg:col-span-1">
+                <div className="sticky top-8">
+                  {' '}
+                  {/* Keeps the form visible as you scroll budgets */}
+                  <AddExpense budgets={budgets} onCreated={loadDashboard} />
+                </div>
+              </div>
+
+              {/* Right Columns: Budgets (3/4 width) */}
+              <div className="lg:col-span-3">
+                {/* We pass a prop to BudgetList to tell it to use a 2-column grid internally */}
+                <BudgetList
+                  budgets={budgets}
+                  expenses={expenses}
+                  layout="grid"
+                />
+              </div>
+            </div>
           )}
         </>
       )}

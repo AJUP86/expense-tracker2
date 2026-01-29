@@ -25,7 +25,7 @@ const budgetSchema = new mongoose.Schema(
 
     type: {
       type: String,
-      enum: ['fixed', 'temporary'],
+      enum: ['fixed', 'temporary', 'variable'],
       default: 'fixed',
     },
 

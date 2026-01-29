@@ -14,7 +14,7 @@ exports.createBudget = async (userId, data) => {
     name: data.name,
     amount: data.amount,
     remaining: data.amount,
-    type: data.type || 'monthly',
+    type: data.type || 'fixed',
     startDate: data.startDate,
     endDate: data.endDate,
   });
