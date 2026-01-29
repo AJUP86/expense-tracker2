@@ -10,7 +10,8 @@ exports.createPeriod = async (userId, data) => {
     amount: data.amount ?? 0,
     remaining: data.amount ?? 0,
     name: data.name,
-    date: data.date,
+    startDate: data.startDate || new Date(),
+    endDate: data.endDate,
   });
 };
 

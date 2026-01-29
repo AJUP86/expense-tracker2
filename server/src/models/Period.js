@@ -27,14 +27,19 @@ const periodSchema = new mongoose.Schema(
       default: false,
     },
 
-    date: {
+    startDate: {
       type: Date,
       default: Date.now,
+      required: true,
+    },
+    endDate: {
+      type: Date,
+      required: true,
     },
   },
   { timestamps: true },
 );
 
-periodSchema.index({ userId: 1, date: -1 });
+periodSchema.index({ userId: 1, startDate: -1 });
 
 module.exports = mongoose.model('Period', periodSchema);
