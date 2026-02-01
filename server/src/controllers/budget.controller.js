@@ -11,7 +11,11 @@ exports.createBudget = async (req, res, next) => {
 
 exports.getBudgets = async (req, res, next) => {
   try {
-    const budgets = await budgetService.getBudgets(req.user.id);
+    const filters = {
+      periodId: req.query.periodId,
+    };
+
+    const budgets = await budgetService.getBudgets(req.user.id, filters);
     res.json(budgets);
   } catch (err) {
     next(err);

@@ -6,25 +6,18 @@ const periodSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
+      index: true,
     },
-
-    amount: {
-      type: Number,
-      default: 0,
-    },
-
-    remaining: {
-      type: Number,
-      default: 0,
-    },
-
     name: {
       type: String,
       required: true,
     },
-    isClosed: {
-      type: Boolean,
-      default: false,
+    status: {
+      type: String,
+      enum: ['PLANNING', 'ACTIVE', 'ARCHIVED'],
+      required: true,
+      default: 'PLANNING',
+      index: true,
     },
 
     startDate: {

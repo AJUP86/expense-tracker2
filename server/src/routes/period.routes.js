@@ -6,6 +6,9 @@ router.use(auth);
 
 router.post('/', controller.createPeriod);
 router.get('/', controller.getPeriods);
-router.post('/:id/close', controller.closePeriod);
+router.get('/current', controller.getCurrentPeriod);
+router.post('/:id/activate', controller.activatePeriod);
+router.post('/:id/archive', controller.archivePeriod);
+router.post('/rollover', controller.rolloverPeriod);
 
 module.exports = router;

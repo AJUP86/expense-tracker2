@@ -7,6 +7,12 @@ const expenseSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    periodId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Period',
+      required: true,
+      index: true,
+    },
 
     budgetId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -16,6 +22,7 @@ const expenseSchema = new mongoose.Schema(
     amount: {
       type: Number,
       required: true,
+      min: 0,
     },
 
     paymentMethod: {

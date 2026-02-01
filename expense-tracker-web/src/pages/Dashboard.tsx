@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { fetchIncomes } from '../services/income.service';
-import { fetchPeriods } from '../services/period.service';
+import { fetchPeriods, fetchCurrentPeriod } from '../services/period.service';
 import { fetchExpenses } from '../services/expense.service';
 import { fetchBudgets } from '../services/budget.service';
 
@@ -13,7 +13,6 @@ import type { Budget } from '../types/budget';
 import AddPeriod from '../components/AddPeriod';
 import PeriodList from '../components/PeriodList';
 import AddExpense from '../components/AddExpense';
-import ExpenseList from '../components/ExpenseList';
 import BudgetList from '../components/BudgetList';
 import AddBudget from '../components/AddBudget';
 import AddIncome from '../components/AddIncome';
@@ -23,6 +22,7 @@ import ClosePeriodButton from '../components/ClosePeriodButton';
 export default function Dashboard() {
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [periods, setPeriods] = useState<Period[]>([]);
+  const [currentPeriod, setCurrentPeriod] = useState<Period | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,25 +34,30 @@ export default function Dashboard() {
   async function loadDashboard() {
     setLoading(true);
     try {
-      const [periodData, expenseData, budgetData] = await Promise.all([
+      const [periodData, current] = await Promise.all([
         fetchPeriods(),
-        fetchExpenses(),
-        fetchBudgets(),
+        fetchCurrentPeriod(),
       ]);
 
       setPeriods(periodData);
-      setExpenses(expenseData);
-      setBudgets(budgetData);
+      setCurrentPeriod(current);
 
-      if (periodData.length > 0) {
-        const activePeriod = periodData.find((p) => !p.isClosed);
-        if (activePeriod) {
-          const incomeData = await fetchIncomes(activePeriod._id);
-          setIncomes(incomeData);
-        } else {
-          setIncomes([]);
-        }
+      if (!current) {
+        setIncomes([]);
+        setBudgets([]);
+        setExpenses([]);
+        return;
       }
+
+      const [incomeData, budgetData, expenseData] = await Promise.all([
+        fetchIncomes(current._id),
+        fetchBudgets(current._id),
+        fetchExpenses(current._id),
+      ]);
+
+      setIncomes(incomeData);
+      setBudgets(budgetData);
+      setExpenses(expenseData);
     } finally {
       setLoading(false);
     }
@@ -60,69 +65,59 @@ export default function Dashboard() {
 
   if (loading) return <p>Loading...</p>;
 
-  const hasPeriod = periods.length > 0;
-  const hasBudget = budgets.length > 0;
-  const openPeriod = periods.find((p) => !p.isClosed);
-  const closedPeriod = periods.find((p) => p.isClosed);
+  if (!currentPeriod) {
+    return (
+      <div className="space-y-8">
+        <div className="flex items-center justify-between">
+          <h1 className="text-xl font-semibold">Dashboard</h1>
+        </div>
 
+        <AddPeriod onCreated={loadDashboard} />
+      </div>
+    );
+  }
+
+  const isPlanning = currentPeriod.status === 'PLANNING';
+  const isActive = currentPeriod.status === 'ACTIVE';
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Dashboard</h1>
 
-        {openPeriod && (
-          <ClosePeriodButton
-            periodId={openPeriod._id}
-            onClosed={loadDashboard}
-          />
-        )}
+        <ClosePeriodButton
+          periodId={currentPeriod._id}
+          status={currentPeriod.status}
+          onChanged={loadDashboard}
+        />
       </div>
 
-      {!hasPeriod && <AddPeriod onCreated={loadDashboard} />}
+      <PeriodList periods={periods} />
 
-      {hasPeriod && (
+      {isPlanning && (
         <>
-          <PeriodList periods={periods} />
-
-          {openPeriod && (
-            <>
-              {hasBudget && (
-                <BudgetList budgets={budgets} expenses={expenses} layout="" />
-              )}
-
-              <div className="space-y-4 pt-4 border-t">
-                <AddIncome
-                  periodId={openPeriod._id}
-                  onCreated={loadDashboard}
-                />
-                <IncomeList incomes={incomes} />
-                <AddBudget onCreated={loadDashboard} />
-              </div>
-            </>
+          {budgets.length > 0 && (
+            <BudgetList budgets={budgets} expenses={expenses} layout="" />
           )}
-          {closedPeriod && (
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-              {/* Left Column: Input (1/4 width) */}
-              <div className="lg:col-span-1">
-                <div className="sticky top-8">
-                  {' '}
-                  {/* Keeps the form visible as you scroll budgets */}
-                  <AddExpense budgets={budgets} onCreated={loadDashboard} />
-                </div>
-              </div>
 
-              {/* Right Columns: Budgets (3/4 width) */}
-              <div className="lg:col-span-3">
-                {/* We pass a prop to BudgetList to tell it to use a 2-column grid internally */}
-                <BudgetList
-                  budgets={budgets}
-                  expenses={expenses}
-                  layout="grid"
-                />
-              </div>
-            </div>
-          )}
+          <div className="space-y-4 pt-4 border-t">
+            <AddIncome periodId={currentPeriod._id} onCreated={loadDashboard} />
+            <IncomeList incomes={incomes} />
+            <AddBudget onCreated={loadDashboard} />
+          </div>
         </>
+      )}
+
+      {isActive && (
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="lg:col-span-1">
+            <div className="sticky top-8 space-y-4">
+              <AddExpense budgets={budgets} onCreated={loadDashboard} />
+            </div>
+          </div>
+          <div className="lg:col-span-3">
+            <BudgetList budgets={budgets} expenses={expenses} layout="grid" />
+          </div>
+        </div>
       )}
     </div>
   );
