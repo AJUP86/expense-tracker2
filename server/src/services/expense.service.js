@@ -3,54 +3,57 @@ const Budget = require('../models/Budget');
 const Period = require('../models/Period');
 
 exports.createExpense = async (userId, data) => {
-  const { description, amount, budgetId } = data;
+  const description = data?.description?.trim();
+  const amount = Number(data?.amount);
+  const budgetId = data?.budgetId;
+  const paymentMethod = data?.paymentMethod;
 
-  if (!description || !amount) {
-    throw new Error('Description and amount are required');
+  if (!description) {
+    throw new Error('Description is required');
+  }
+
+  if (Number.isNaN(amount) || amount <= 0) {
+    throw new Error('Amount must be a positive number');
+  }
+
+  if (!paymentMethod || !['cash', 'credit'].includes(paymentMethod)) {
+    throw new Error('Invalid payment method');
+  }
+
+  const activePeriod = await Period.findOne({
+    userId,
+    status: 'ACTIVE',
+  });
+
+  if (!activePeriod) {
+    throw new Error(
+      'No ACTIVE period found. Activate a period before adding expenses.',
+    );
   }
 
   if (budgetId) {
-    const budget = await Budget.findOne({ _id: budgetId, userId });
-    if (!budget) throw new Error('Budget not found');
+    const budget = await Budget.findOne({
+      _id: budgetId,
+      userId,
+      periodId: activePeriod._id,
+    });
 
-    if (budget.remaining < amount) {
-      throw new Error('Budget has insufficient remaining amount');
-    }
-
-    const now = new Date();
-    if (
-      budget.type === 'temporary' &&
-      (now < budget.startDate || now > budget.endDate)
-    ) {
-      throw new Error('Budget is not active');
+    if (!budget) {
+      throw new Error('Budget not found for the active period');
     }
 
     budget.remaining -= amount;
     await budget.save();
   }
 
-  const period = await Period.findOne({ userId, isClosed: true }).sort({
-    createdAt: -1,
-  });
-
-  if (!period) throw new Error('No period found for user');
-  if (!period || period.remaining < amount) {
-    throw new Error('Insufficient funds remaining');
-  }
-  if (!period.isClosed) {
-    throw new Error('Cannot add expenses to an open period');
-  }
-
-  period.remaining -= amount;
-  await period.save();
-
   const expense = await Expense.create({
     userId,
+    periodId: activePeriod._id,
     description,
     amount,
-    budgetId,
-    paymentMethod: data.paymentMethod,
-    date: data.date,
+    budgetId: budgetId || undefined,
+    paymentMethod,
+    date: data?.date || new Date(),
   });
 
   return expense;
@@ -58,6 +61,10 @@ exports.createExpense = async (userId, data) => {
 
 exports.getExpenses = async (userId, filters = {}) => {
   const query = { userId };
+
+  if (filters.periodId) {
+    query.periodId = filters.periodId;
+  }
 
   if (filters.budgetId) {
     query.budgetId = filters.budgetId;

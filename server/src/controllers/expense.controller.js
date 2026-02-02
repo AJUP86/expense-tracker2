@@ -13,8 +13,8 @@ exports.createExpense = async (req, res, next) => {
 exports.getExpenses = async (req, res, next) => {
   try {
     const filters = {
+      periodId: req.query.periodId,
       budgetId: req.query.budgetId,
-      category: req.query.category,
       startDate: req.query.startDate
         ? new Date(req.query.startDate)
         : undefined,
