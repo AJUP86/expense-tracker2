@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { fetchIncomes } from '../services/income.service';
-import { fetchPeriods, fetchCurrentPeriod } from '../services/period.service';
+import { fetchCurrentPeriod } from '../services/period.service';
 import { fetchExpenses } from '../services/expense.service';
 import { fetchBudgets } from '../services/budget.service';
 
@@ -11,7 +11,6 @@ import type { Expense } from '../types/expense';
 import type { Budget } from '../types/budget';
 
 import AddPeriod from '../components/AddPeriod';
-import PeriodList from '../components/PeriodList';
 import AddExpense from '../components/AddExpense';
 import BudgetList from '../components/BudgetList';
 import AddBudget from '../components/AddBudget';
@@ -21,7 +20,6 @@ import ClosePeriodButton from '../components/ClosePeriodButton';
 
 export default function Dashboard() {
   const [incomes, setIncomes] = useState<Income[]>([]);
-  const [periods, setPeriods] = useState<Period[]>([]);
   const [currentPeriod, setCurrentPeriod] = useState<Period | null>(null);
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [budgets, setBudgets] = useState<Budget[]>([]);
@@ -34,12 +32,7 @@ export default function Dashboard() {
   async function loadDashboard() {
     setLoading(true);
     try {
-      const [periodData, current] = await Promise.all([
-        fetchPeriods(),
-        fetchCurrentPeriod(),
-      ]);
-
-      setPeriods(periodData);
+      const current = await fetchCurrentPeriod();
       setCurrentPeriod(current);
 
       if (!current) {
@@ -91,7 +84,13 @@ export default function Dashboard() {
         />
       </div>
 
-      <PeriodList periods={periods} />
+      <div className="p-4 border rounded">
+        <p className="font-semibold">{currentPeriod.name}</p>
+        <p className="text-sm text-gray-600">
+          {new Date(currentPeriod.startDate).toLocaleDateString()} -{' '}
+          {new Date(currentPeriod.endDate).toLocaleDateString()}
+        </p>
+      </div>
 
       {isPlanning && (
         <>
@@ -114,13 +113,13 @@ export default function Dashboard() {
               <div>
                 <p className="text-sm text-gray-600">Total Income</p>
                 <p className="text-lg font-semibold">
-                  ${currentPeriod.summary.totalIncome.toFixed(2)}
+                  €{currentPeriod.summary.totalIncome.toFixed(2)}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Total Expenses</p>
                 <p className="text-lg font-semibold">
-                  ${currentPeriod.summary.totalExpenses.toFixed(2)}
+                  €{currentPeriod.summary.totalExpenses.toFixed(2)}
                 </p>
               </div>
               <div>
@@ -128,7 +127,7 @@ export default function Dashboard() {
                 <p
                   className={`text-lg font-semibold ${currentPeriod.summary.remainingIncome < 0 ? 'text-red-600' : 'text-green-600'}`}
                 >
-                  ${currentPeriod.summary.remainingIncome.toFixed(2)}
+                  €{currentPeriod.summary.remainingIncome.toFixed(2)}
                 </p>
               </div>
             </div>

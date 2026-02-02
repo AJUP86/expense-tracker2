@@ -81,9 +81,7 @@ export default function BudgetList({
                   <div>
                     <p className="font-bold text-gray-900">{budget.name}</p>
                     <p className="text-[10px] text-gray-500 uppercase tracking-wider">
-                      {budget.type}{' '}
-                      {budget.type === 'temporary' &&
-                        `(${formatDate(budget.startDate)} - ${formatDate(budget.endDate)})`}
+                      {budget.type}
                     </p>
                   </div>
                 </div>
