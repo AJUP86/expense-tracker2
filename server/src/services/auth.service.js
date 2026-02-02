@@ -3,6 +3,10 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 exports.register = async (email, password) => {
+  if (!password || password.length < 8) {
+    throw new Error('Password must be at least 8 characters');
+  }
+
   const existing = await User.findOne({ email });
   if (existing) {
     throw new Error('Email already in use');
