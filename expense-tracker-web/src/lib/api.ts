@@ -24,6 +24,12 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}) {
   }
 
   if (!res.ok) {
+    if (res.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+      throw new Error('Session expired');
+    }
     throw new Error(data.message || 'API error');
   }
 
