@@ -108,16 +108,43 @@ export default function Dashboard() {
       )}
 
       {isActive && (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          <div className="lg:col-span-1">
-            <div className="sticky top-8 space-y-4">
-              <AddExpense budgets={budgets} onCreated={loadDashboard} />
+        <>
+          {currentPeriod.summary && (
+            <div className="grid grid-cols-3 gap-4 p-4 bg-gray-50 rounded">
+              <div>
+                <p className="text-sm text-gray-600">Total Income</p>
+                <p className="text-lg font-semibold">
+                  ${currentPeriod.summary.totalIncome.toFixed(2)}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Total Expenses</p>
+                <p className="text-lg font-semibold">
+                  ${currentPeriod.summary.totalExpenses.toFixed(2)}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Remaining</p>
+                <p
+                  className={`text-lg font-semibold ${currentPeriod.summary.remainingIncome < 0 ? 'text-red-600' : 'text-green-600'}`}
+                >
+                  ${currentPeriod.summary.remainingIncome.toFixed(2)}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="lg:col-span-1">
+              <div className="sticky top-8 space-y-4">
+                <AddExpense budgets={budgets} onCreated={loadDashboard} />
+              </div>
+            </div>
+            <div className="lg:col-span-3">
+              <BudgetList budgets={budgets} expenses={expenses} layout="grid" />
             </div>
           </div>
-          <div className="lg:col-span-3">
-            <BudgetList budgets={budgets} expenses={expenses} layout="grid" />
-          </div>
-        </div>
+        </>
       )}
     </div>
   );
