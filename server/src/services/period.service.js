@@ -1,4 +1,6 @@
 const Period = require('../models/Period');
+const Income = require('../models/Income');
+const Expense = require('../models/Expense');
 
 function validateDateRange(startDate, endDate) {
   const parsedStartDate = new Date(startDate);
@@ -133,4 +135,22 @@ exports.rolloverPeriod = async (userId, data) => {
   }
 
   return exports.createPeriod(userId, data);
+};
+
+exports.getPeriodSummary = async (userId, periodId) => {
+  const incomes = await Income.find({ userId, periodId });
+  const expenses = await Expense.find({ userId, periodId });
+
+  const totalIncome = incomes.reduce((sum, income) => sum + income.amount, 0);
+  const totalExpenses = expenses.reduce(
+    (sum, expense) => sum + expense.amount,
+    0,
+  );
+  const remainingIncome = totalIncome - totalExpenses;
+
+  return {
+    totalIncome,
+    totalExpenses,
+    remainingIncome,
+  };
 };

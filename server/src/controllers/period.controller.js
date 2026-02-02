@@ -21,7 +21,20 @@ exports.getPeriods = async (req, res, next) => {
 exports.getCurrentPeriod = async (req, res, next) => {
   try {
     const currentPeriod = await periodService.getCurrentPeriod(req.user.id);
-    res.json(currentPeriod);
+
+    if (!currentPeriod) {
+      return res.json(null);
+    }
+
+    const summary = await periodService.getPeriodSummary(
+      req.user.id,
+      currentPeriod._id,
+    );
+
+    res.json({
+      ...currentPeriod.toObject(),
+      summary,
+    });
   } catch (err) {
     next(err);
   }
