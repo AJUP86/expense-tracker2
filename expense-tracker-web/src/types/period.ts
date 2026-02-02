@@ -1,5 +1,11 @@
 export type PeriodStatus = 'PLANNING' | 'ACTIVE' | 'ARCHIVED';
 
+export interface PeriodSummary {
+  totalIncome: number;
+  totalExpenses: number;
+  remainingIncome: number;
+}
+
 export interface Period {
   _id: string;
   userId: string;
@@ -9,4 +15,5 @@ export interface Period {
   endDate: string;
   createdAt: string;
   updatedAt: string;
+  summary?: PeriodSummary;
 }
