@@ -3,11 +3,18 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 exports.register = async (email, password) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email || !emailRegex.test(email)) {
+    throw new Error('Valid email is required');
+  }
+
   if (!password || password.length < 8) {
     throw new Error('Password must be at least 8 characters');
   }
 
-  const existing = await User.findOne({ email });
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const existing = await User.findOne({ email: normalizedEmail });
   if (existing) {
     throw new Error('Email already in use');
   }
@@ -15,7 +22,7 @@ exports.register = async (email, password) => {
   const passwordHash = await bcrypt.hash(password, 10);
 
   const user = await User.create({
-    email,
+    email: normalizedEmail,
     passwordHash,
   });
 
@@ -26,7 +33,8 @@ exports.register = async (email, password) => {
 };
 
 exports.login = async (email, password) => {
-  const user = await User.findOne({ email });
+  const normalizedEmail = email ? email.trim().toLowerCase() : '';
+  const user = await User.findOne({ email: normalizedEmail });
   if (!user) {
     throw new Error('Invalid credentials');
   }
