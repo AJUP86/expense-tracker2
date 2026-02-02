@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -40,6 +40,13 @@ export default function Login() {
         >
           Sign in
         </button>
+
+        <p className="text-center text-sm text-gray-600">
+          Don't have an account?{' '}
+          <Link to="/register" className="text-black underline">
+            Register
+          </Link>
+        </p>
       </div>
     </div>
   );
