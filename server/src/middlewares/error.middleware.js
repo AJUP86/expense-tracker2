@@ -9,6 +9,7 @@ module.exports = (error, req, res, next) => {
     (error.message.includes('not found') ||
       error.message.includes('Invalid') ||
       error.message.includes('required') ||
+      error.message.includes('must be at least') ||
       error.message.includes('only be added') ||
       error.message.includes('already exists') ||
       error.message.includes('No ACTIVE period') ||
