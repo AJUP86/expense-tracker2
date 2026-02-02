@@ -5,10 +5,14 @@ export async function fetchPeriods(): Promise<Period[]> {
   return apiRequest('/periods');
 }
 
+export async function fetchCurrentPeriod(): Promise<Period | null> {
+  return apiRequest('/periods/current');
+}
+
 export async function createPeriod(data: {
-  amount?: number;
   name: string;
-  date?: string;
+  startDate: string;
+  endDate: string;
 }): Promise<Period> {
   return apiRequest('/periods', {
     method: 'POST',
@@ -16,8 +20,14 @@ export async function createPeriod(data: {
   });
 }
 
-export function closePeriod(periodId: string): Promise<Period> {
-  return apiRequest(`/periods/${periodId}/close`, {
+export async function activatePeriod(periodId: string): Promise<Period> {
+  return apiRequest(`/periods/${periodId}/activate`, {
+    method: 'POST',
+  });
+}
+
+export async function archivePeriod(periodId: string): Promise<Period> {
+  return apiRequest(`/periods/${periodId}/archive`, {
     method: 'POST',
   });
 }

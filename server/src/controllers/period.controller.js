@@ -18,10 +18,43 @@ exports.getPeriods = async (req, res, next) => {
   }
 };
 
-exports.closePeriod = async (req, res, next) => {
+exports.getCurrentPeriod = async (req, res, next) => {
   try {
-    const period = await periodService.closePeriod(req.user.id, req.params.id);
+    const currentPeriod = await periodService.getCurrentPeriod(req.user.id);
+    res.json(currentPeriod);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.activatePeriod = async (req, res, next) => {
+  try {
+    const period = await periodService.activatePeriod(
+      req.user.id,
+      req.params.id,
+    );
     res.json(period);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.archivePeriod = async (req, res, next) => {
+  try {
+    const period = await periodService.archivePeriod(
+      req.user.id,
+      req.params.id,
+    );
+    res.json(period);
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.rolloverPeriod = async (req, res, next) => {
+  try {
+    const newPeriod = await periodService.rolloverPeriod(req.user.id, req.body);
+    res.status(201).json(newPeriod);
   } catch (err) {
     next(err);
   }
