@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function Register() {
   const { register } = useAuth();
@@ -20,9 +20,10 @@ export default function Register() {
       setEmail('');
       setPassword('');
       navigate('/');
-    } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Registration failed');
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : 'Registration failed';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -53,13 +54,20 @@ export default function Register() {
 
         <button
           type="submit"
-          className="w-full bg-black text-white py-2 rounded"
+          className="w-full bg-black text-white py-2 rounded disabled:opacity-50"
           disabled={loading}
         >
           {loading ? 'Creating...' : 'Create account'}
         </button>
 
-        {error && <p className="text-red-500 mt-2">{error}</p>}
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+
+        <p className="text-center text-sm text-gray-600">
+          Already have an account?{' '}
+          <Link to="/login" className="text-black underline">
+            Sign in
+          </Link>
+        </p>
       </form>
     </div>
   );
