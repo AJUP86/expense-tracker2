@@ -76,7 +76,6 @@ exports.createExpense = async (userId, data) => {
     }
   }
 
-  // No budget — no transaction needed
   const expense = await Expense.create({
     userId,
     periodId: activePeriod._id,
