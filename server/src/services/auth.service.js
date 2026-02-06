@@ -16,7 +16,7 @@ exports.register = async (email, password) => {
 
   const existing = await User.findOne({ email: normalizedEmail });
   if (existing) {
-    throw new Error('Email already already exists');
+    throw new Error('Email already exists');
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
@@ -45,7 +45,7 @@ exports.login = async (email, password) => {
   }
 
   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: '10m',
+    expiresIn: '7d',
   });
 
   return {
