@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { apiRequest } from './api';
 
 const mockFetch = vi.fn();
-global.fetch = mockFetch;
+globalThis.fetch = mockFetch;
 
 describe('apiRequest', () => {
   beforeEach(() => {
@@ -99,10 +99,16 @@ describe('apiRequest', () => {
     localStorage.setItem('token', 'expired-token');
     localStorage.setItem('user', JSON.stringify({ id: '1' }));
 
-    const originalLocation = window.location;
-    // @ts-expect-error - mocking window.location
-    delete window.location;
-    window.location = { href: '' } as Location;
+    let redirectedTo = '';
+    const locationSpy = vi.spyOn(window, 'location', 'get').mockReturnValue({
+      ...window.location,
+      set href(url: string) {
+        redirectedTo = url;
+      },
+      get href() {
+        return redirectedTo;
+      },
+    } as unknown as Location);
 
     mockFetch.mockResolvedValueOnce({
       ok: false,
@@ -114,9 +120,9 @@ describe('apiRequest', () => {
 
     expect(localStorage.getItem('token')).toBeNull();
     expect(localStorage.getItem('user')).toBeNull();
-    expect(window.location.href).toBe('/login');
+    expect(redirectedTo).toBe('/login');
 
-    window.location = originalLocation;
+    locationSpy.mockRestore();
   });
 
   it('should pass custom options to fetch', async () => {
