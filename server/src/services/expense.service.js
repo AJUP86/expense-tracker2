@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Expense = require('../models/Expense');
 const Budget = require('../models/Budget');
 const Period = require('../models/Period');
@@ -42,16 +43,45 @@ exports.createExpense = async (userId, data) => {
       throw new Error('Budget not found for the active period');
     }
 
-    budget.remaining -= amount;
-    await budget.save();
+    // Use transaction for atomic budget update + expense creation
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      budget.remaining -= amount;
+      await budget.save({ session });
+
+      const [expense] = await Expense.create(
+        [
+          {
+            userId,
+            periodId: activePeriod._id,
+            description,
+            amount,
+            budgetId,
+            paymentMethod,
+            date: data?.date || new Date(),
+          },
+        ],
+        { session },
+      );
+
+      await session.commitTransaction();
+      return expense;
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
   }
 
+  // No budget — no transaction needed
   const expense = await Expense.create({
     userId,
     periodId: activePeriod._id,
     description,
     amount,
-    budgetId: budgetId || undefined,
     paymentMethod,
     date: data?.date || new Date(),
   });
