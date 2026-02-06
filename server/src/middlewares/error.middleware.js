@@ -24,7 +24,9 @@ module.exports = (error, req, res, next) => {
     message = error.message;
   }
 
-  console.error(error);
+  if (process.env.NODE_ENV !== 'test') {
+    console.error(error);
+  }
 
   res.status(statusCode).json({
     message,
