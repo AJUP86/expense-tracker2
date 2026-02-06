@@ -16,6 +16,7 @@ const authLimiter = rateLimit({
   message: { message: 'Too many attempts, please try again after 15 minutes' },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'test',
 });
 
 app.use(

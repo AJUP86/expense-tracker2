@@ -6,7 +6,7 @@ module.exports = {
   verbose: true,
   forceExit: true,
   clearMocks: true,
-  // Don't run tests in parallel to avoid DB conflicts
+
   maxWorkers: 1,
 };
 
