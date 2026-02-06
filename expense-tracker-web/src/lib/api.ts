@@ -1,6 +1,9 @@
 const API_URL = import.meta.env.VITE_API_URL;
 
-export async function apiRequest(endpoint: string, options: RequestInit = {}) {
+export async function apiRequest<T = unknown>(
+  endpoint: string,
+  options: RequestInit = {},
+): Promise<T> {
   const token = localStorage.getItem('token');
 
   const res = await fetch(`${API_URL}${endpoint}`, {
@@ -11,13 +14,13 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}) {
       ...options.headers,
     },
   });
-  let data: any = null;
+  let data: T | null = null;
   const text = await res.text();
 
   if (text) {
     try {
-      data = JSON.parse(text);
-    } catch (err) {
+      data = JSON.parse(text) as T;
+    } catch {
       console.error('Failed to parse JSON', text);
       throw new Error('Invalid JSON response from server');
     }
@@ -30,8 +33,9 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}) {
       window.location.href = '/login';
       throw new Error('Session expired');
     }
-    throw new Error(data.message || 'API error');
+    const errorData = data as { message?: string } | null;
+    throw new Error(errorData?.message || 'API error');
   }
 
-  return data;
+  return data as T;
 }

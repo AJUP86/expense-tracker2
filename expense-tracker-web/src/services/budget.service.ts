@@ -3,7 +3,7 @@ import type { Budget, BudgetType } from '../types/budget';
 
 export async function fetchBudgets(periodId?: string): Promise<Budget[]> {
   const query = periodId ? `?periodId=${encodeURIComponent(periodId)}` : '';
-  return apiRequest(`/budgets${query}`);
+  return apiRequest<Budget[]>(`/budgets${query}`);
 }
 
 export async function createBudget(data: {
@@ -13,7 +13,7 @@ export async function createBudget(data: {
 }): Promise<Budget> {
   const budgetName = data.name.trim();
 
-  return apiRequest('/budgets', {
+  return apiRequest<Budget>('/budgets', {
     method: 'POST',
     body: JSON.stringify({
       name: budgetName,

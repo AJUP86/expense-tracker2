@@ -16,6 +16,7 @@ const authLimiter = rateLimit({
   message: { message: 'Too many attempts, please try again after 15 minutes' },
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => process.env.NODE_ENV === 'test',
 });
 
 app.use(
@@ -26,7 +27,9 @@ app.use(
 );
 app.use(express.json({ limit: '1mb' }));
 app.use(compression());
-app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+}
 
 app.get('/api/health', (_req, res) => {
   const dbState = mongoose.connection.readyState;
