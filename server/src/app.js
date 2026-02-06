@@ -3,6 +3,8 @@ const cors = require('cors');
 const morgan = require('morgan');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const compression = require('compression');
+const mongoose = require('mongoose');
 
 const app = express();
 
@@ -26,10 +28,21 @@ app.use(
   }),
 );
 app.use(express.json({ limit: '1mb' }));
-app.use(morgan('dev'));
+app.use(compression());
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
-app.get('/api/health', (req, res) => {
-  res.json({ ok: true });
+app.get('/api/health', (_req, res) => {
+  const dbState = mongoose.connection.readyState;
+  const dbStatus = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting',
+  };
+  res.json({
+    ok: dbState === 1,
+    database: dbStatus[dbState] || 'unknown',
+  });
 });
 
 // Routes
