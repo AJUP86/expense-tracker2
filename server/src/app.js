@@ -1,3 +1,4 @@
+const Sentry = require('@sentry/node');
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -5,6 +6,15 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const compression = require('compression');
 const mongoose = require('mongoose');
+
+// Initialize Sentry (must be before app)
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development',
+    enabled: process.env.NODE_ENV === 'production',
+  });
+}
 
 const app = express();
 
@@ -51,6 +61,11 @@ app.use('/api/budgets', require('./routes/budget.routes'));
 app.use('/api/expenses', require('./routes/expense.routes'));
 app.use('/api/periods', require('./routes/period.routes'));
 app.use('/api/incomes', require('./routes/income.routes'));
+
+// Sentry error handler (must be before custom error handler)
+if (process.env.SENTRY_DSN) {
+  Sentry.setupExpressErrorHandler(app);
+}
 
 // Error handler
 app.use(require('./middlewares/error.middleware'));
