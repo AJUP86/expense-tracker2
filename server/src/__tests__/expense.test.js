@@ -154,10 +154,12 @@ describe('Expense API', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body).toEqual([]);
+      expect(res.body.data).toEqual([]);
+      expect(res.body.pagination).toBeDefined();
+      expect(res.body.pagination.total).toBe(0);
     });
 
-    it('should return user expenses', async () => {
+    it('should return user expenses with pagination', async () => {
       await createActivePeriod(token);
 
       await request(app)
@@ -179,7 +181,15 @@ describe('Expense API', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(2);
+      expect(res.body.data).toHaveLength(2);
+      expect(res.body.pagination).toEqual({
+        page: 1,
+        limit: 20,
+        total: 2,
+        totalPages: 1,
+        hasNext: false,
+        hasPrev: false,
+      });
     });
 
     it('should not return other user expenses', async () => {
@@ -201,8 +211,47 @@ describe('Expense API', () => {
         .set('Authorization', `Bearer ${auth2.token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(0);
+      expect(res.body.data).toHaveLength(0);
+      expect(res.body.pagination.total).toBe(0);
+    });
+
+    it('should respect page and limit parameters', async () => {
+      await createActivePeriod(token);
+
+      for (let i = 1; i <= 5; i++) {
+        await request(app)
+          .post('/api/expenses')
+          .set('Authorization', `Bearer ${token}`)
+          .send({
+            description: `Expense ${i}`,
+            amount: i * 10,
+            paymentMethod: 'cash',
+          });
+      }
+
+      const res = await request(app)
+        .get('/api/expenses?page=2&limit=2')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toHaveLength(2);
+      expect(res.body.pagination).toEqual({
+        page: 2,
+        limit: 2,
+        total: 5,
+        totalPages: 3,
+        hasNext: true,
+        hasPrev: true,
+      });
+    });
+
+    it('should cap limit at maximum value', async () => {
+      const res = await request(app)
+        .get('/api/expenses?limit=500')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.pagination.limit).toBe(100);
     });
   });
 });
-
