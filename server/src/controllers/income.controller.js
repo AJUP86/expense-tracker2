@@ -1,4 +1,5 @@
 const incomeService = require('../services/income.service');
+const { parsePaginationParams } = require('../utils/pagination');
 
 exports.createIncome = async (req, res, next) => {
   try {
@@ -15,11 +16,13 @@ exports.createIncome = async (req, res, next) => {
 
 exports.getIncomes = async (req, res, next) => {
   try {
-    const incomes = await incomeService.getIncomes(
+    const paginationParams = parsePaginationParams(req.query);
+    const result = await incomeService.getIncomes(
       req.user.id,
       req.params.periodId,
+      paginationParams,
     );
-    res.json(incomes);
+    res.json(result);
   } catch (err) {
     next(err);
   }
