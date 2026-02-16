@@ -118,12 +118,11 @@ describe('Expense API', () => {
           amount: 500,
         });
 
-      // Get period ID and activate
       const periodsRes = await request(app)
         .get('/api/periods')
         .set('Authorization', `Bearer ${token}`);
 
-      const planningPeriod = periodsRes.body.find(
+      const planningPeriod = periodsRes.body.data.find(
         (p) => p.status === 'PLANNING',
       );
 
