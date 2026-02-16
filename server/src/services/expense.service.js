@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Expense = require('../models/Expense');
 const Budget = require('../models/Budget');
 const Period = require('../models/Period');
+const { paginateQuery } = require('../utils/pagination');
 
 exports.createExpense = async (userId, data) => {
   const description = data?.description?.trim();
@@ -88,7 +89,7 @@ exports.createExpense = async (userId, data) => {
   return expense;
 };
 
-exports.getExpenses = async (userId, filters = {}) => {
+exports.getExpenses = async (userId, filters = {}, paginationParams = null) => {
   const query = { userId };
 
   if (filters.periodId) {
@@ -103,6 +104,13 @@ exports.getExpenses = async (userId, filters = {}) => {
     query.date = {};
     if (filters.startDate) query.date.$gte = filters.startDate;
     if (filters.endDate) query.date.$lte = filters.endDate;
+  }
+
+  if (paginationParams) {
+    return paginateQuery(Expense, query, paginationParams, {
+      sort: { date: -1 },
+      populate: { path: 'budgetId', select: 'name' },
+    });
   }
 
   return Expense.find(query).sort({ date: -1 }).populate('budgetId', 'name');

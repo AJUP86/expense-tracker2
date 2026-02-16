@@ -1,6 +1,7 @@
 const Period = require('../models/Period');
 const Income = require('../models/Income');
 const Expense = require('../models/Expense');
+const { paginateQuery } = require('../utils/pagination');
 
 function validateDateRange(startDate, endDate) {
   const parsedStartDate = new Date(startDate);
@@ -55,11 +56,16 @@ exports.createPeriod = async (userId, data) => {
   });
 };
 
-exports.getPeriods = async (userId) => {
-  return Period.find({ userId }).sort({
-    startDate: -1,
-    createdAt: -1,
-  });
+exports.getPeriods = async (userId, paginationParams = null) => {
+  const query = { userId };
+
+  if (paginationParams) {
+    return paginateQuery(Period, query, paginationParams, {
+      sort: { startDate: -1, createdAt: -1 },
+    });
+  }
+
+  return Period.find(query).sort({ startDate: -1, createdAt: -1 });
 };
 
 exports.getCurrentPeriod = async (userId) => {

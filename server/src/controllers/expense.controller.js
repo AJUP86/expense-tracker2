@@ -1,6 +1,6 @@
 const expenseService = require('../services/expense.service');
+const { parsePaginationParams } = require('../utils/pagination');
 
-// Create a new expense
 exports.createExpense = async (req, res, next) => {
   try {
     const expense = await expenseService.createExpense(req.user.id, req.body);
@@ -20,8 +20,13 @@ exports.getExpenses = async (req, res, next) => {
         : undefined,
       endDate: req.query.endDate ? new Date(req.query.endDate) : undefined,
     };
-    const expenses = await expenseService.getExpenses(req.user.id, filters);
-    res.json(expenses);
+    const paginationParams = parsePaginationParams(req.query);
+    const result = await expenseService.getExpenses(
+      req.user.id,
+      filters,
+      paginationParams,
+    );
+    res.json(result);
   } catch (err) {
     next(err);
   }

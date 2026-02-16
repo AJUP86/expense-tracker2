@@ -95,10 +95,12 @@ describe('Income API', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body).toEqual([]);
+      expect(res.body.data).toEqual([]);
+      expect(res.body.pagination).toBeDefined();
+      expect(res.body.pagination.total).toBe(0);
     });
 
-    it('should return incomes for period', async () => {
+    it('should return incomes for period with pagination', async () => {
       const period = await createPlanningPeriod();
 
       await request(app)
@@ -116,7 +118,15 @@ describe('Income API', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(2);
+      expect(res.body.data).toHaveLength(2);
+      expect(res.body.pagination).toEqual({
+        page: 1,
+        limit: 20,
+        total: 2,
+        totalPages: 1,
+        hasNext: false,
+        hasPrev: false,
+      });
     });
 
     it('should not return other user incomes', async () => {
@@ -127,7 +137,9 @@ describe('Income API', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({ name: 'Salary', amount: 5000 });
 
-      const otherUser = await createAuthenticatedUser(`other-${Date.now()}@test.com`);
+      const otherUser = await createAuthenticatedUser(
+        `other-${Date.now()}@test.com`,
+      );
 
       const res = await request(app)
         .get(`/api/incomes/${period._id}`)
@@ -136,6 +148,42 @@ describe('Income API', () => {
       expect(res.status).toBe(400);
       expect(res.body.message).toContain('not found');
     });
+
+    it('should respect page and limit parameters', async () => {
+      const period = await createPlanningPeriod();
+
+      for (let i = 1; i <= 5; i++) {
+        await request(app)
+          .post(`/api/incomes/${period._id}`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ name: `Income ${i}`, amount: i * 1000 });
+      }
+
+      const res = await request(app)
+        .get(`/api/incomes/${period._id}?page=2&limit=2`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toHaveLength(2);
+      expect(res.body.pagination).toEqual({
+        page: 2,
+        limit: 2,
+        total: 5,
+        totalPages: 3,
+        hasNext: true,
+        hasPrev: true,
+      });
+    });
+
+    it('should cap limit at maximum value', async () => {
+      const period = await createPlanningPeriod();
+
+      const res = await request(app)
+        .get(`/api/incomes/${period._id}?limit=500`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.pagination.limit).toBe(100);
+    });
   });
 });
-
