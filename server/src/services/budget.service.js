@@ -1,5 +1,9 @@
 const Budget = require('../models/Budget');
 const Period = require('../models/Period');
+const {
+  paginateQuery,
+  buildPaginationResponse,
+} = require('../utils/pagination');
 
 exports.createBudget = async (userId, data) => {
   const budgetName = data?.name?.trim();
@@ -35,7 +39,7 @@ exports.createBudget = async (userId, data) => {
   });
 };
 
-exports.getBudgets = async (userId, filters = {}) => {
+exports.getBudgets = async (userId, filters = {}, paginationParams = null) => {
   const query = { userId };
 
   if (filters.periodId) {
@@ -49,8 +53,22 @@ exports.getBudgets = async (userId, filters = {}) => {
     if (currentPeriod) {
       query.periodId = currentPeriod._id;
     } else {
+      if (paginationParams) {
+        return buildPaginationResponse(
+          [],
+          0,
+          paginationParams.page,
+          paginationParams.limit,
+        );
+      }
       return [];
     }
+  }
+
+  if (paginationParams) {
+    return paginateQuery(Budget, query, paginationParams, {
+      sort: { createdAt: -1 },
+    });
   }
 
   return Budget.find(query).sort({ createdAt: -1 });
