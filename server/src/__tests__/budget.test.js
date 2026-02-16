@@ -145,10 +145,12 @@ describe('Budget API', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body).toEqual([]);
+      expect(res.body.data).toEqual([]);
+      expect(res.body.pagination).toBeDefined();
+      expect(res.body.pagination.total).toBe(0);
     });
 
-    it('should return budgets for current period', async () => {
+    it('should return budgets for current period with pagination', async () => {
       await createPlanningPeriod(token);
 
       await request(app)
@@ -166,7 +168,15 @@ describe('Budget API', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(2);
+      expect(res.body.data).toHaveLength(2);
+      expect(res.body.pagination).toEqual({
+        page: 1,
+        limit: 20,
+        total: 2,
+        totalPages: 1,
+        hasNext: false,
+        hasPrev: false,
+      });
     });
 
     it('should not return other user budgets', async () => {
@@ -184,8 +194,43 @@ describe('Budget API', () => {
         .set('Authorization', `Bearer ${auth2.token}`);
 
       expect(res.status).toBe(200);
-      expect(res.body).toHaveLength(0);
+      expect(res.body.data).toHaveLength(0);
+      expect(res.body.pagination.total).toBe(0);
+    });
+
+    it('should respect page and limit parameters', async () => {
+      await createPlanningPeriod(token);
+
+      for (let i = 1; i <= 5; i++) {
+        await request(app)
+          .post('/api/budgets')
+          .set('Authorization', `Bearer ${token}`)
+          .send({ name: `Budget ${i}`, amount: i * 100 });
+      }
+
+      const res = await request(app)
+        .get('/api/budgets?page=2&limit=2')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.data).toHaveLength(2);
+      expect(res.body.pagination).toEqual({
+        page: 2,
+        limit: 2,
+        total: 5,
+        totalPages: 3,
+        hasNext: true,
+        hasPrev: true,
+      });
+    });
+
+    it('should cap limit at maximum value', async () => {
+      const res = await request(app)
+        .get('/api/budgets?limit=500')
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(res.status).toBe(200);
+      expect(res.body.pagination.limit).toBe(100);
     });
   });
 });
-

@@ -1,4 +1,5 @@
 const periodService = require('../services/period.service');
+const { parsePaginationParams } = require('../utils/pagination');
 
 exports.createPeriod = async (req, res, next) => {
   try {
@@ -11,8 +12,12 @@ exports.createPeriod = async (req, res, next) => {
 
 exports.getPeriods = async (req, res, next) => {
   try {
-    const periods = await periodService.getPeriods(req.user.id);
-    res.json(periods);
+    const paginationParams = parsePaginationParams(req.query);
+    const result = await periodService.getPeriods(
+      req.user.id,
+      paginationParams,
+    );
+    res.json(result);
   } catch (err) {
     next(err);
   }

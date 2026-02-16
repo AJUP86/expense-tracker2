@@ -1,5 +1,6 @@
 const Income = require('../models/Income');
 const Period = require('../models/Period');
+const { paginateQuery } = require('../utils/pagination');
 
 exports.createIncome = async (userId, periodId, data) => {
   const period = await Period.findOne({ _id: periodId, userId });
@@ -27,9 +28,17 @@ exports.createIncome = async (userId, periodId, data) => {
   return income;
 };
 
-exports.getIncomes = async (userId, periodId) => {
+exports.getIncomes = async (userId, periodId, paginationParams = null) => {
   const period = await Period.findOne({ _id: periodId, userId });
   if (!period) throw new Error('Period not found');
 
-  return Income.find({ userId, periodId }).sort({ createdAt: -1 });
+  const query = { userId, periodId };
+
+  if (paginationParams) {
+    return paginateQuery(Income, query, paginationParams, {
+      sort: { createdAt: -1 },
+    });
+  }
+
+  return Income.find(query).sort({ createdAt: -1 });
 };
