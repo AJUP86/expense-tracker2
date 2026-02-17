@@ -1,8 +1,21 @@
 import { apiRequest } from '../lib/api';
 import type { Period } from '../types/period';
 
+interface PaginatedResponse<T> {
+  data: T[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  };
+}
+
 export async function fetchPeriods(): Promise<Period[]> {
-  return apiRequest<Period[]>('/periods');
+  const response = await apiRequest<PaginatedResponse<Period>>('/periods');
+  return response.data;
 }
 
 export async function fetchCurrentPeriod(): Promise<Period | null> {
